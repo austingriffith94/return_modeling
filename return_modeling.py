@@ -71,27 +71,48 @@ class api:
         
         
 class xy:    
-    def __init__(self,date):
+    def __init__(self,date,adj):
         self.date = date
+        self.adj = adj
     
-    def log_ret(self,x,adj):
-        b = -1*x
-        loc = adj.index.get_loc(self.date)
-        adj_date = adj.iloc[loc]
-        
-        if x > adj.shape[0]:
-            window = adj[adj.index < self.date].iloc[0]
-        else:
-            window = adj[adj.index < self.date].iloc[b]
+    def log_ret(self,x):
+        adj = self.adj
+        log = pd.DataFrame([])
+        for i in x:
+            loc = adj.index.get_loc(self.date)
+            adj_date = adj.iloc[loc]
             
-        loc1 = adj.index.get_loc(window.name)
-        adj_1 = adj.iloc[loc1]
-        adj_log = np.log(adj_date/adj_1)
-        return(adj_log)
+            if i > adj.iloc[0:loc].shape[0]:
+                window = adj[adj.index < self.date].iloc[0]
+            else:
+                window = adj[adj.index < self.date].iloc[-i]
+                
+            loc1 = adj.index.get_loc(window.name)
+            adj_1 = adj.iloc[loc1]
+            adj_log = np.log(adj_date/adj_1)
+            log = pd.concat([log,adj_log], axis=1)
+        
+        log.columns = list(map(str,x))
+        return(log)
         
     def move_avg(self,x):
-        pass
-
+        adj = self.adj
+        ma = pd.DataFrame([])
+        for i in x:
+            window = adj[adj.index < date].iloc[-1]
+            loc1 = adj.index.get_loc(window.name)
+            if i > adj.iloc[0:loc1].shape[0]:
+                window2 = adj[adj.index < date].iloc[0]
+            else:
+                window2 = adj[adj.index < date].iloc[-i]
+            
+            loc2 = adj.index.get_loc(window2.name)
+            adj_range = adj.iloc[loc2:loc1+1]
+            adj_mean = adj_range.mean()
+            ma = pd.concat([ma,adj_mean], axis=1)
+            
+        ma.columns = list(map(str,x))
+        return(ma)
 
 # read tickers from csv
 # pull price date from yahoo api
@@ -111,12 +132,10 @@ file = yahoo.api_read()
 date = '2000-05-16'
 adj = file.loc['Adj Close']
 
-n = [1,5,22]
-stats = xy(date)
+stats = xy(date,adj)
+log_x = [1,5,22]
+log_n = stats.log_ret(log_x)
 
-log1 = stats.log_ret(1,adj)
-log5 = stats.log_ret(5,adj)
-log22 = stats.log_ret(22,adj)
-log = pd.concat([log1,log5,log22], axis=1)
+ma_x = [5,22,200]
+ma_n = stats.move_avg(ma_x)
 
-    
