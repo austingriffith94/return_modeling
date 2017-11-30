@@ -12,6 +12,8 @@ import datetime
 import numpy as np
 import pandas_datareader as pdr
 import re
+from sklearn import datasets, linear_model
+from sklearn.metrics import mean_squared_error, r2_score
 
 csv1 = 'tickers_nasd.csv'
 csv2 = 'tickers_nyse.csv'
@@ -111,7 +113,12 @@ class xy:
             adj_mean = adj_range.mean()
             ma = pd.concat([ma,adj_mean], axis=1)
             
-        ma.columns = list(map(str,x))
+        header = list(map(str,pa_x))
+        ma_head = []
+        for i in header:
+            ma_head = ma_head + [i + 'ma']
+            
+        ma.columns = ma_head
         return(ma)
     
     def lag_log_ret(self,x):
@@ -132,7 +139,12 @@ class xy:
             adj_log = np.log(adj_date/adj_1)
             log = pd.concat([log,adj_log], axis=1)
         
-        log.columns = list(map(str,x))
+        header = list(map(str,pa_x))
+        pa = []
+        for i in header:
+            pa = pa + [i + 'pa']
+            
+        log.columns = pa
         return(log)
         
 
@@ -164,6 +176,9 @@ log_n = stats.log_ret(log_x)
 
 ma_x = [5,22,200]
 ma_n = stats.move_avg(ma_x)
-
 pa_x = [5,22,68]
 pa_n = stats.lag_log_ret(pa_x)
+
+ma_pa = pd.concat([pa_n,ma_n], axis=1)
+
+
