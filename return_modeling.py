@@ -113,12 +113,38 @@ class xy:
             
         ma.columns = list(map(str,x))
         return(ma)
+    
+    def lag_log_ret(self,x):
+        adj = self.adj
+        log = pd.DataFrame([])
+        for i in x:
+            window = adj[adj.index < date].iloc[-1]
+            loc = adj.index.get_loc(window.name)
+            adj_date = adj.iloc[loc]
+            
+            if i > adj.iloc[0:loc].shape[0]:
+                window2 = adj[adj.index < self.date].iloc[0]
+            else:
+                window2 = adj[adj.index < self.date].iloc[-i]
+                
+            loc1 = adj.index.get_loc(window2.name)
+            adj_1 = adj.iloc[loc1]
+            adj_log = np.log(adj_date/adj_1)
+            log = pd.concat([log,adj_log], axis=1)
+        
+        log.columns = list(map(str,x))
+        return(log)
+        
+
+
+
+# main code
 
 # read tickers from csv
 # pull price date from yahoo api
 nasd = reader(csv1,min_cap)
 nyse = reader(csv2,min_cap)
-data = nasd.csvr()
+nasd.csvr()
 nyse.csvr()
 ticker1 = nasd.tickers()
 ticker2 = nyse.tickers()
@@ -139,3 +165,5 @@ log_n = stats.log_ret(log_x)
 ma_x = [5,22,200]
 ma_n = stats.move_avg(ma_x)
 
+pa_x = [5,22,68]
+pa_n = stats.lag_log_ret(pa_x)
