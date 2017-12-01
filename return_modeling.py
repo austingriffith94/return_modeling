@@ -12,9 +12,7 @@ import pandas as pd
 import datetime
 import numpy as np
 import pandas_datareader as pdr
-import re
-from sklearn import linear_model
-from sklearn.metrics import mean_squared_error, r2_score
+
 
 # reads csv, gets ticker values
 class reader:
@@ -175,67 +173,63 @@ file = yahoo.api_read()
 
 # get log returns of adj close
 # moving average
-date = '2016-06-01'
+d = ['2016-06-01','2017-07-03']
 adj = file.loc['Adj Close']
 
-stats = xy(date,adj)
 log_x = [1,5,22]
-log_n = stats.log_ret(log_x)
 ma_x = [5,22,200]
-ma_n = stats.move_avg(ma_x)
 pa_x = [5,22,68]
-pa_n = stats.lag_log_ret(pa_x)
-ma_pa = pd.concat([pa_n,ma_n], axis=1)
 
-# bins
-dfcoef5 = pd.DataFrame([])
-dfcoef1 = pd.DataFrame([])
-dfcoef22 = pd.DataFrame([])
-dfp5 = pd.DataFrame([])
-dfp1 = pd.DataFrame([])
-dfp22 = pd.DataFrame([])
-
-# getting dates
-loc = adj.index.get_loc(date)
-adj1 = adj[loc:loc+60]
-adj1 = pd.DataFrame.transpose(adj1)
-dates = list(adj1.columns.values)
-
-# for loop through all dates
-# executes x and y variables of classes
-for time in dates:
-    t = str(time)
-    t = t.split('T')[0]
-    stats = xy(t,adj)
-    log_n = stats.log_ret(log_x)
-    ma_n = stats.move_avg(ma_x)
-    pa_n = stats.lag_log_ret(pa_x)
-    ma_pa = pd.concat([pa_n,ma_n], axis=1)
-    for yh in list(log_n):
-        x = ma_pa
-        y = log_n[yh]
-        merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
-        mergen = merge.drop(yh, axis=1)
-        mergen = sm.add_constant(mergen)
-        est = sm.OLS(merge[yh],mergen).fit()
-        coef = est.params
-        p_val = est.pvalues
-        if yh == list(log_n)[0]:
-            dfcoef1 = pd.concat([dfcoef1,coef],axis=1)
-            dfp1 = pd.concat([dfp1,p_val],axis=1)
-        elif yh == list(log_n)[1]:
-            dfcoef5 = pd.concat([dfcoef5,coef],axis=1)
-            dfp5 = pd.concat([dfp5,p_val],axis=1)
-        elif yh == list(log_n)[2]:
-            dfcoef22 = pd.concat([dfcoef22,coef],axis=1)
-            dfp22 = pd.concat([dfp22,p_val],axis=1)
-        
-dfcoef1 = dfcoef1.transpose().mean()
-dfcoef5 = dfcoef5.transpose().mean()
-dfcoef22 = dfcoef22.transpose().mean()
-dfp1 = dfp1.transpose().mean()
-dfp5 = dfp5.transpose().mean()
-dfp22 = dfp22.transpose().mean()
-main = pd.concat([dfcoef1,dfcoef5,dfcoef22,dfp1,dfp5,dfp22],axis=1)
-main.columns = [list(log_n)[0],list(log_n)[1],list(log_n)[2],'p1','p5','p22']
-main.to_csv(date+'.csv')
+for date in d:
+    # bins
+    dfcoef5 = pd.DataFrame([])
+    dfcoef1 = pd.DataFrame([])
+    dfcoef22 = pd.DataFrame([])
+    dfp5 = pd.DataFrame([])
+    dfp1 = pd.DataFrame([])
+    dfp22 = pd.DataFrame([])
+    
+    # getting dates
+    loc = adj.index.get_loc(date)
+    adj1 = adj[loc:loc+60]
+    adj1 = pd.DataFrame.transpose(adj1)
+    dates = list(adj1.columns.values)
+    
+    # for loop through all dates
+    # executes x and y variables of classes
+    for time in dates:
+        t = str(time)
+        t = t.split('T')[0]
+        stats = xy(t,adj)
+        log_n = stats.log_ret(log_x)
+        ma_n = stats.move_avg(ma_x)
+        pa_n = stats.lag_log_ret(pa_x)
+        ma_pa = pd.concat([pa_n,ma_n], axis=1)
+        for yh in list(log_n):
+            x = ma_pa
+            y = log_n[yh]
+            merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
+            mergen = merge.drop(yh, axis=1)
+            mergen = sm.add_constant(mergen)
+            est = sm.OLS(merge[yh],mergen).fit()
+            coef = est.params
+            p_val = est.pvalues
+            if yh == list(log_n)[0]:
+                dfcoef1 = pd.concat([dfcoef1,coef],axis=1)
+                dfp1 = pd.concat([dfp1,p_val],axis=1)
+            elif yh == list(log_n)[1]:
+                dfcoef5 = pd.concat([dfcoef5,coef],axis=1)
+                dfp5 = pd.concat([dfp5,p_val],axis=1)
+            elif yh == list(log_n)[2]:
+                dfcoef22 = pd.concat([dfcoef22,coef],axis=1)
+                dfp22 = pd.concat([dfp22,p_val],axis=1)
+            
+    dfcoef1 = dfcoef1.transpose().mean()
+    dfcoef5 = dfcoef5.transpose().mean()
+    dfcoef22 = dfcoef22.transpose().mean()
+    dfp1 = dfp1.transpose().mean()
+    dfp5 = dfp5.transpose().mean()
+    dfp22 = dfp22.transpose().mean()
+    main = pd.concat([dfcoef1,dfcoef5,dfcoef22,dfp1,dfp5,dfp22],axis=1)
+    main.columns = [list(log_n)[0],list(log_n)[1],list(log_n)[2],'p1','p5','p22']
+    main.to_csv(date+'.csv')
