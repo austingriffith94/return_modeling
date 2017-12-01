@@ -1,18 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Nov 29 13:14:57 2017
+# Austin Griffith
+# 11/30/2017
+# Return Modeling
 
-@author: Austin
-"""
-
-import sys
-import csv
 import statsmodels.api as sm
 import pandas as pd
-import datetime
 import numpy as np
 import pandas_datareader as pdr
-
 
 # reads csv, gets ticker values
 class reader:
@@ -63,7 +56,7 @@ class api:
         file = pd.read_hdf('api_data.h5')
         return(file)
         
-        
+# calculates x and y variables used in modeling of adjusted close returns    
 class xy:    
     def __init__(self,date,adj):
         self.date = date
@@ -171,15 +164,17 @@ yahoo = api(ticker,source,start_date,end_date)
 # yahoo.api_save() # gets the api data from yahoo finance
 file = yahoo.api_read()
 
-# get log returns of adj close
-# moving average
+# date list
+# pulls adjusted close price from api data panel
 d = ['2016-06-01','2017-07-03']
 adj = file.loc['Adj Close']
 
+# distances in log, average and lagged log
 log_x = [1,5,22]
 ma_x = [5,22,200]
 pa_x = [5,22,68]
 
+#iterates for each desired date
 for date in d:
     # bins
     dfcoef5 = pd.DataFrame([])
@@ -205,6 +200,7 @@ for date in d:
         ma_n = stats.move_avg(ma_x)
         pa_n = stats.lag_log_ret(pa_x)
         ma_pa = pd.concat([pa_n,ma_n], axis=1)
+        # for loop through each log return
         for yh in list(log_n):
             x = ma_pa
             y = log_n[yh]
@@ -214,6 +210,7 @@ for date in d:
             est = sm.OLS(merge[yh],mergen).fit()
             coef = est.params
             p_val = est.pvalues
+            # specifies which bin to store coefficients and pvalues in
             if yh == list(log_n)[0]:
                 dfcoef1 = pd.concat([dfcoef1,coef],axis=1)
                 dfp1 = pd.concat([dfp1,p_val],axis=1)
@@ -223,13 +220,17 @@ for date in d:
             elif yh == list(log_n)[2]:
                 dfcoef22 = pd.concat([dfcoef22,coef],axis=1)
                 dfp22 = pd.concat([dfp22,p_val],axis=1)
-            
+    
+    # transposes bins, takes average of values
     dfcoef1 = dfcoef1.transpose().mean()
     dfcoef5 = dfcoef5.transpose().mean()
     dfcoef22 = dfcoef22.transpose().mean()
     dfp1 = dfp1.transpose().mean()
     dfp5 = dfp5.transpose().mean()
     dfp22 = dfp22.transpose().mean()
+    
+    # concatinates values into main variable dataframe
+    # renames columns and outputs data frame to csv with the date as the name
     main = pd.concat([dfcoef1,dfcoef5,dfcoef22,dfp1,dfp5,dfp22],axis=1)
     main.columns = [list(log_n)[0],list(log_n)[1],list(log_n)[2],'p1','p5','p22']
     main.to_csv(date+'.csv')
