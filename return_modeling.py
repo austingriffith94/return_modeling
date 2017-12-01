@@ -7,7 +7,7 @@ Created on Wed Nov 29 13:14:57 2017
 
 import sys
 import csv
-import statsmodels as sm
+import statsmodels.formula.api as sm
 import pandas as pd
 import datetime
 import numpy as np
@@ -91,7 +91,7 @@ class xy:
         header = list(map(str,x))
         y_head = []
         for i in header:
-            y_head = y_head + [i + 'y']
+            y_head = y_head + ['y' + i]
             
         log.columns = y_head
         return(log)
@@ -116,7 +116,7 @@ class xy:
         header = list(map(str,x))
         ma_head = []
         for i in header:
-            ma_head = ma_head + [i + 'ma']
+            ma_head = ma_head + ['ma' + i]
             
         ma.columns = ma_head
         return(ma)
@@ -143,7 +143,7 @@ class xy:
         header = list(map(str,x))
         pa = []
         for i in header:
-            pa = pa + [i + 'pa']
+            pa = pa + ['pa' + i]
             
         log.columns = pa
         return(log)
@@ -191,8 +191,6 @@ loc = adj.index.get_loc(date)
 adj1 = adj[loc:loc+60]
 adj1 = pd.DataFrame.transpose(adj1)
 dates = list(adj1.columns.values)
-t = str(dates[0])
-t = t.split('T')[0]
 
 # for loop through all dates
 for time in dates:
@@ -205,15 +203,19 @@ for time in dates:
     ma_pa = pd.concat([pa_n,ma_n], axis=1)
     for yh in list(log_n):
         for xh in list(ma_pa):
-            pass #stats modeling
+            x = ma_pa[xh]
+            y = log_n[yh]
 
 
 #linear modeling
-x = ma_pa['5pa']
-y = log_n['5y']
+x = ma_pa['pa5']
+y = log_n['y5']
+merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
+result = sm.ols(formula="y5 ~ pa5", data=merge).fit()
+alpha = result.params[0]
+beta = result.params[1]
+a_p = result.pvalues[0]
+b_p = result.pvalues[1]
 
-#sm
-x = sm.tools.tools.add_constant(x)
-est = sm.regression.linear_model.OLS(y,x)
-est = est.fit()
-est.summary()
+
+
