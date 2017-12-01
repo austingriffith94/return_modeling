@@ -1,7 +1,9 @@
 # Austin Griffith
 # 11/30/2017
 # Return Modeling
+# Python 3.6.3
 
+# library import
 import statsmodels.api as sm
 import pandas as pd
 import numpy as np
@@ -62,6 +64,7 @@ class xy:
         self.date = date
         self.adj = adj
     
+    # log returns of adj close price
     def log_ret(self,x):
         adj = self.adj
         log = pd.DataFrame([])
@@ -86,7 +89,8 @@ class xy:
             
         log.columns = y_head
         return(log)
-        
+    
+    # moving average over specified period of days
     def move_avg(self,x):
         adj = self.adj
         date = self.date
@@ -112,6 +116,7 @@ class xy:
         ma.columns = ma_head
         return(ma)
     
+    # log returns lagged by one day from specified date
     def lag_log_ret(self,x):
         adj = self.adj
         date = self.date
