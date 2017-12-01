@@ -151,7 +151,8 @@ class xy:
 
 
 
-# main code
+###### main code ######
+# data reader variables
 csv1 = 'tickers_nasd.csv'
 csv2 = 'tickers_nyse.csv'
 min_cap = 500*(10**6)
@@ -186,12 +187,6 @@ pa_x = [5,22,68]
 pa_n = stats.lag_log_ret(pa_x)
 ma_pa = pd.concat([pa_n,ma_n], axis=1)
 
-# getting dates
-loc = adj.index.get_loc(date)
-adj1 = adj[loc:loc+60]
-adj1 = pd.DataFrame.transpose(adj1)
-dates = list(adj1.columns.values)
-
 # bins
 dfcoef5 = pd.DataFrame([])
 dfcoef1 = pd.DataFrame([])
@@ -200,7 +195,14 @@ dfp5 = pd.DataFrame([])
 dfp1 = pd.DataFrame([])
 dfp22 = pd.DataFrame([])
 
+# getting dates
+loc = adj.index.get_loc(date)
+adj1 = adj[loc:loc+60]
+adj1 = pd.DataFrame.transpose(adj1)
+dates = list(adj1.columns.values)
+
 # for loop through all dates
+# executes x and y variables of classes
 for time in dates:
     t = str(time)
     t = t.split('T')[0]
@@ -228,15 +230,12 @@ for time in dates:
             dfcoef22 = pd.concat([dfcoef22,coef],axis=1)
             dfp22 = pd.concat([dfp22,p_val],axis=1)
         
-            
-
-# linear modeling
-x = ma_pa
-y = log_n['y5']
-merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
-mergen = merge.drop('y5', axis=1)
-mergen = sm.add_constant(mergen)
-est = sm.OLS(merge['y5'],mergen).fit()
-print(est.summary())
-coef = est.params
-p_val = est.pvalues
+dfcoef1 = dfcoef1.transpose().mean()
+dfcoef5 = dfcoef5.transpose().mean()
+dfcoef22 = dfcoef22.transpose().mean()
+dfp1 = dfp1.transpose().mean()
+dfp5 = dfp5.transpose().mean()
+dfp22 = dfp22.transpose().mean()
+main = pd.concat([dfcoef1,dfcoef5,dfcoef22,dfp1,dfp5,dfp22],axis=1)
+main.columns = [list(log_n)[0],list(log_n)[1],list(log_n)[2],'p1','p5','p22']
+main.to_csv(date+'.csv')
