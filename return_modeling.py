@@ -180,14 +180,11 @@ adj = file.loc['Adj Close']
 stats = xy(date,adj)
 log_x = [1,5,22]
 log_n = stats.log_ret(log_x)
-
 ma_x = [5,22,200]
 ma_n = stats.move_avg(ma_x)
 pa_x = [5,22,68]
 pa_n = stats.lag_log_ret(pa_x)
-
 ma_pa = pd.concat([pa_n,ma_n], axis=1)
-
 
 # getting dates
 loc = adj.index.get_loc(date)
@@ -197,8 +194,22 @@ dates = list(adj1.columns.values)
 t = str(dates[0])
 t = t.split('T')[0]
 
+# for loop through all dates
+for time in dates:
+    t = str(time)
+    t = t.split('T')[0]
+    stats = xy(t,adj)
+    log_n = stats.log_ret(log_x)
+    ma_n = stats.move_avg(ma_x)
+    pa_n = stats.lag_log_ret(pa_x)
+    ma_pa = pd.concat([pa_n,ma_n], axis=1)
+    for yh in list(log_n):
+        for xh in list(ma_pa):
+            pass #stats modeling
+
+
+#linear modeling
 x = ma_pa['5pa']
-x = x.values.reshape(1,-1)
 y = log_n['5y']
 
 #sm
