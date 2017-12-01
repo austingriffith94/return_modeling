@@ -7,7 +7,7 @@ Created on Wed Nov 29 13:14:57 2017
 
 import sys
 import csv
-import statsmodels.formula.api as sm
+import statsmodels.api as sm
 import pandas as pd
 import datetime
 import numpy as np
@@ -192,6 +192,14 @@ adj1 = adj[loc:loc+60]
 adj1 = pd.DataFrame.transpose(adj1)
 dates = list(adj1.columns.values)
 
+# bins
+dfcoef5 = pd.DataFrame([])
+dfcoef1 = pd.DataFrame([])
+dfcoef22 = pd.DataFrame([])
+dfp5 = pd.DataFrame([])
+dfp1 = pd.DataFrame([])
+dfp22 = pd.DataFrame([])
+
 # for loop through all dates
 for time in dates:
     t = str(time)
@@ -202,20 +210,20 @@ for time in dates:
     pa_n = stats.lag_log_ret(pa_x)
     ma_pa = pd.concat([pa_n,ma_n], axis=1)
     for yh in list(log_n):
-        for xh in list(ma_pa):
-            x = ma_pa[xh]
-            y = log_n[yh]
-
-
-#linear modeling
-x = ma_pa['pa5']
-y = log_n['y5']
-merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
-result = sm.ols(formula="y5 ~ pa5", data=merge).fit()
-alpha = result.params[0]
-beta = result.params[1]
-a_p = result.pvalues[0]
-b_p = result.pvalues[1]
-
-
-
+        x = ma_pa
+        y = log_n[yh]
+        merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
+        mergen = merge.drop(yh, axis=1)
+        mergen = sm.add_constant(mergen)
+        est = sm.OLS(merge[yh],mergen).fit()
+        coef = est.params
+        p_val = est.pvalues
+        if yh == list(log_n)[0]:
+            dfcoef1 = pd.concat(dfcoef1,coef)
+            dfp1 = pd.concat(dfp1,p_val)
+        elif yh == list(log_n)[1]:
+            dfcoef5 = pd.concat(dfcoef1,coef)
+            dfp5 = pd.concat(dfp1,p_val)
+        elif yh == list(log_n)[2]:
+            dfcoef22 = pd.concat(dfcoef1,coef)
+            dfp22 = pd.concat(dfp1,p_val)
