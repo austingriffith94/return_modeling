@@ -219,11 +219,24 @@ for time in dates:
         coef = est.params
         p_val = est.pvalues
         if yh == list(log_n)[0]:
-            dfcoef1 = pd.concat(dfcoef1,coef)
-            dfp1 = pd.concat(dfp1,p_val)
+            dfcoef1 = pd.concat([dfcoef1,coef],axis=1)
+            dfp1 = pd.concat([dfp1,p_val],axis=1)
         elif yh == list(log_n)[1]:
-            dfcoef5 = pd.concat(dfcoef1,coef)
-            dfp5 = pd.concat(dfp1,p_val)
+            dfcoef5 = pd.concat([dfcoef5,coef],axis=1)
+            dfp5 = pd.concat([dfp5,p_val],axis=1)
         elif yh == list(log_n)[2]:
-            dfcoef22 = pd.concat(dfcoef1,coef)
-            dfp22 = pd.concat(dfp1,p_val)
+            dfcoef22 = pd.concat([dfcoef22,coef],axis=1)
+            dfp22 = pd.concat([dfp22,p_val],axis=1)
+        
+            
+
+# linear modeling
+x = ma_pa
+y = log_n['y5']
+merge = pd.concat([x,y], axis=1).dropna(axis=0, how='any')
+mergen = merge.drop('y5', axis=1)
+mergen = sm.add_constant(mergen)
+est = sm.OLS(merge['y5'],mergen).fit()
+print(est.summary())
+coef = est.params
+p_val = est.pvalues
