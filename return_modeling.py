@@ -242,8 +242,8 @@ for date in d:
     l0 = list(log_n)[0]
     l1 = list(log_n)[1]
     l2 = list(log_n)[2]
-    s = 'std dev'
-    p = 'p_val'
+    s = ' std dev'
+    p = ' p_val'
 
     # concatinates values into main variable dataframe
     # renames columns and outputs data frame to csv with the date as the name
