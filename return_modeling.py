@@ -222,15 +222,18 @@ for date in d:
                 dfp22 = pd.concat([dfp22,p_val],axis=1)
     
     # transposes bins, takes average of values
-    dfcoef1 = dfcoef1.transpose().mean()
-    dfcoef5 = dfcoef5.transpose().mean()
-    dfcoef22 = dfcoef22.transpose().mean()
+    df1 = dfcoef1.transpose().mean()
+    df5 = dfcoef5.transpose().mean()
+    df22 = dfcoef22.transpose().mean()
+    dfstd1 = dfcoef1.transpose().std()
+    dfstd5 = dfcoef5.transpose().std()
+    dfstd22 = dfcoef22.transpose().std()
     dfp1 = dfp1.transpose().mean()
     dfp5 = dfp5.transpose().mean()
     dfp22 = dfp22.transpose().mean()
     
     # concatinates values into main variable dataframe
     # renames columns and outputs data frame to csv with the date as the name
-    main = pd.concat([dfcoef1,dfcoef5,dfcoef22,dfp1,dfp5,dfp22],axis=1)
-    main.columns = [list(log_n)[0],list(log_n)[1],list(log_n)[2],'p1','p5','p22']
+    main = pd.concat([df1,df5,df22,dfstd1,dfstd5,dfstd22,dfp1,dfp5,dfp22],axis=1)
+    main.columns = [list(log_n)[0],list(log_n)[1],list(log_n)[2],'std1','std5','std22','p1','p5','p22']
     main.to_csv(date+'.csv')
