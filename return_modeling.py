@@ -7,20 +7,14 @@ Created on Wed Nov 29 13:14:57 2017
 
 import sys
 import csv
+import statsmodels as sm
 import pandas as pd
 import datetime
 import numpy as np
 import pandas_datareader as pdr
 import re
-from sklearn import datasets, linear_model
+from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
-
-csv1 = 'tickers_nasd.csv'
-csv2 = 'tickers_nyse.csv'
-min_cap = 500*(10**6)
-source = 'yahoo'
-start_date = '2000-01-01'
-end_date = '2017-11-17'
 
 # reads csv, gets ticker values
 class reader:
@@ -94,11 +88,17 @@ class xy:
             adj_log = np.log(adj_date/adj_1)
             log = pd.concat([log,adj_log], axis=1)
         
-        log.columns = list(map(str,x))
+        header = list(map(str,x))
+        y_head = []
+        for i in header:
+            y_head = y_head + [i + 'y']
+            
+        log.columns = y_head
         return(log)
         
     def move_avg(self,x):
         adj = self.adj
+        date = self.date
         ma = pd.DataFrame([])
         for i in x:
             window = adj[adj.index < date].iloc[-1]
@@ -113,7 +113,7 @@ class xy:
             adj_mean = adj_range.mean()
             ma = pd.concat([ma,adj_mean], axis=1)
             
-        header = list(map(str,pa_x))
+        header = list(map(str,x))
         ma_head = []
         for i in header:
             ma_head = ma_head + [i + 'ma']
@@ -123,6 +123,7 @@ class xy:
     
     def lag_log_ret(self,x):
         adj = self.adj
+        date = self.date
         log = pd.DataFrame([])
         for i in x:
             window = adj[adj.index < date].iloc[-1]
@@ -139,7 +140,7 @@ class xy:
             adj_log = np.log(adj_date/adj_1)
             log = pd.concat([log,adj_log], axis=1)
         
-        header = list(map(str,pa_x))
+        header = list(map(str,x))
         pa = []
         for i in header:
             pa = pa + [i + 'pa']
@@ -151,6 +152,12 @@ class xy:
 
 
 # main code
+csv1 = 'tickers_nasd.csv'
+csv2 = 'tickers_nyse.csv'
+min_cap = 500*(10**6)
+source = 'yahoo'
+start_date = '2000-01-01'
+end_date = '2017-11-17'
 
 # read tickers from csv
 # pull price date from yahoo api
@@ -167,7 +174,7 @@ file = yahoo.api_read()
 
 # get log returns of adj close
 # moving average
-date = '2000-05-16'
+date = '2016-06-01'
 adj = file.loc['Adj Close']
 
 stats = xy(date,adj)
@@ -182,3 +189,20 @@ pa_n = stats.lag_log_ret(pa_x)
 ma_pa = pd.concat([pa_n,ma_n], axis=1)
 
 
+# getting dates
+loc = adj.index.get_loc(date)
+adj1 = adj[loc:loc+60]
+adj1 = pd.DataFrame.transpose(adj1)
+dates = list(adj1.columns.values)
+t = str(dates[0])
+t = t.split('T')[0]
+
+x = ma_pa['5pa']
+x = x.values.reshape(1,-1)
+y = log_n['5y']
+
+#sm
+x = sm.tools.tools.add_constant(x)
+est = sm.regression.linear_model.OLS(y,x)
+est = est.fit()
+est.summary()
