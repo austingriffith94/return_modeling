@@ -8,6 +8,7 @@ import statsmodels.api as sm
 import pandas as pd
 import numpy as np
 import pandas_datareader as pdr
+import os
 
 # reads csv, gets ticker values
 class reader:
@@ -59,7 +60,7 @@ class api:
         return(file)
 
 # calculates x and y variables used in modeling of adjusted close returns
-class xy:
+class model:
     def __init__(self,date,adj):
         self.date = date
         self.adj = adj
@@ -147,7 +148,7 @@ class xy:
 
 
 
-###### main code ######
+############ MAIN CODE ############
 # data reader variables
 csv1 = 'tickers_nasd.csv'
 csv2 = 'tickers_nyse.csv'
@@ -166,7 +167,10 @@ ticker1 = nasd.tickers()
 ticker2 = nyse.tickers()
 ticker = combine_tickers(ticker1,ticker2)
 yahoo = api(ticker,source,start_date,end_date)
-# yahoo.api_save() # gets the api data from yahoo finance
+
+if os.path.exists('api_data.h5') == False:
+    yahoo.api_save() # gets the api data from yahoo finance
+
 file = yahoo.api_read()
 
 # date list
@@ -175,7 +179,7 @@ d = ['2016-06-01','2017-07-03']
 length = 60
 adj = file.loc['Adj Close']
 
-# distances in log, average and lagged log
+# distances in log, average and lagged log respectively
 log_x = [1,5,22]
 ma_x = [5,22,200]
 pa_x = [5,22,68]
@@ -201,7 +205,7 @@ for date in d:
     for time in dates:
         t = str(time)
         t = t.split('T')[0]
-        stats = xy(t,adj)
+        stats = model(t,adj)
         log_n = stats.log_ret(log_x)
         ma_n = stats.move_avg(ma_x)
         pa_n = stats.lag_log_ret(pa_x)
