@@ -2,11 +2,11 @@
 This code models starts by pulling data from January 2000 to November 2017. The purpose of the code is to model log returns with lagged log returns and moving average of returns. Then, using the model, calculate 60 day returns after 1/1/2016 and 1/3/2017.
 
 ## Data
-The data pulled from the Yahoo API was saved as a .h5 file. If you don't wish to spend time downloading the data or the Yahoo API isn't working for you, the .h5 data panel can be found at the link [here.](https://goo.gl/DoHABj)
+The data pulled from the Yahoo API was saved as a .h5 file. If you don't wish to spend time downloading the data or the Yahoo API isn't working for you, the .h5 data panel can be found at the link [here, labeled as 'api_data.'](https://goo.gl/DoHABj)
 
 ## Classes
 ### Reader
-Takes in the provided frim data from the NYSE and NASDAQ, and filters out values using a limiting market capitalization. In the main code, $500 million was the minimum market cap allowed. This left roughly 3100 firms to pull data and run the model on.
+Takes in the provided firm data from the NYSE and NASDAQ, and filters out values using a limiting market capitalization. In the main code, $500 million was the minimum market cap allowed. This left roughly 3100 firms to pull data and run the model on.
 
 ### API
 Pulls return data from the Yahoo Finance API. Because of the large list of firms, the process can take upwards of 20 minutes. To avoid repeating the download process with every run of the code, the date panel is then saved as a [.h5 file](https://goo.gl/DoHABj). It can then be read from within the working directory.
